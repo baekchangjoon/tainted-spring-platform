@@ -1,0 +1,70 @@
+# JaCoCo 커버리지 수집용 오버라이드.
+#   docker compose -f docker-compose.yml -f docker-compose.jacoco.yml up -d --wait
+#
+# 각 Java 서비스에 jacocoagent 를 -javaagent 로 주입(tcpserver 모드)하여,
+# 서비스를 멈추지 않고 런타임에 커버리지를 덤프할 수 있게 한다.
+# README의 설계 의도("JAVA_TOOL_OPTIONS = 품질 도구가 -javaagent 를 주입할 슬롯")를 그대로 활용.
+#
+# tcpserver 호스트 포트 매핑: 63080(bff) 63081(auth) 63082(diary) 63083(mindgraph)
+#                            63084(counseling) 63085(community) 63086(analytics) 63087(notification)
+# includes=com.tainted.* → 애플리케이션 코드만 계측(프레임워크 제외).
+
+x-jacoco-mount: &jacoco-mount
+  - ./jacoco/jacocoagent.jar:/opt/jacoco/jacocoagent.jar:ro
+
+services:
+  auth-user:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63081:6300"
+
+  diary:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63082:6300"
+
+  mindgraph:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63083:6300"
+
+  counseling:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63084:6300"
+
+  community:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63085:6300"
+
+  analytics:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63086:6300"
+
+  notification:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63087:6300"
+
+  bff-gateway:
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/opt/jacoco/jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=com.tainted.*"
+    volumes: *jacoco-mount
+    ports:
+      - "63080:6300"

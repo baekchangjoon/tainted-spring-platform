@@ -1,0 +1,16 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose YAML + scripts
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('docker-compose.yml')); print('docker-compose.yml YAML OK')"
+          test -x scripts/smoke.sh && echo "smoke.sh executable"
+          for f in init/mysql/*.sql init/postgres/*.sql; do test -f "$f"; done && echo "init SQL present"

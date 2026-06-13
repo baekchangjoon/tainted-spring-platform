@@ -133,6 +133,33 @@ services:
       retries: 20
       start_period: 40s
 
+  mindgraph:
+    <<: *java-service
+    build:
+      context: ../tainted-spring-mindgraph
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:-}"
+      SPRING_PROFILES_ACTIVE: "docker"
+      POSTGRES_USER: "${POSTGRES_USER:-postgres}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-postgrespw}"
+      SERVICES_DIARY_URL: "http://diary:8082"
+    ports:
+      - "8083:8083"
+    healthcheck:
+      # 런타임 이미지에 설치한 curl 사용. -f: 비2xx 응답이면 실패 → actuator DOWN 시 unhealthy.
+      test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     profiles: ["ui"]

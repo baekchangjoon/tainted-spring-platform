@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tainted-spring-mindgraph
+  namespace: tainted-spring
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: mindgraph }
+  template:
+    metadata:
+      labels: { app: mindgraph }
+    spec:
+      containers:
+        - name: mindgraph
+          image: tainted-spring/mindgraph:0.1.0
+          ports: [{ containerPort: 8083 }]
+          env:
+            - { name: SPRING_PROFILES_ACTIVE, value: "eks" }
+            - { name: JAVA_TOOL_OPTIONS, value: "" }
+            - { name: SERVICES_DIARY_URL, value: "http://tainted-spring-diary" }
+          readinessProbe:
+            httpGet: { path: /actuator/health, port: 8083 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tainted-spring-mindgraph
+  namespace: tainted-spring
+spec:
+  selector: { app: mindgraph }
+  ports:
+    - { port: 80, targetPort: 8083 }

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tainted-spring-counseling
+  namespace: tainted-spring
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: counseling }
+  template:
+    metadata:
+      labels: { app: counseling }
+    spec:
+      containers:
+        - name: counseling
+          image: tainted-spring/counseling:0.1.0
+          ports: [{ containerPort: 8084 }]
+          env:
+            - { name: SPRING_PROFILES_ACTIVE, value: "eks" }
+            - { name: JAVA_TOOL_OPTIONS, value: "" }
+            - { name: SERVICES_MINDGRAPH_URL, value: "http://tainted-spring-mindgraph" }
+            - { name: SERVICES_COMMUNITY_URL, value: "http://tainted-spring-community" }
+          readinessProbe:
+            httpGet: { path: /actuator/health, port: 8084 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tainted-spring-counseling
+  namespace: tainted-spring
+spec:
+  selector: { app: counseling }
+  ports:
+    - { port: 80, targetPort: 8084 }

@@ -230,6 +230,28 @@ services:
       retries: 20
       start_period: 40s
 
+  notification:
+    <<: *java-service
+    build:
+      context: ../tainted-spring-notification
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:-}"
+      SPRING_PROFILES_ACTIVE: "docker"
+    ports:
+      - "8087:8087"
+    healthcheck:
+      # 런타임 이미지에 설치한 curl 사용. -f: 비2xx 응답이면 실패.
+      test: ["CMD", "curl", "-fsS", "http://localhost:8087/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     profiles: ["ui"]

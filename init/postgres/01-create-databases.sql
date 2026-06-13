@@ -1,0 +1,3 @@
+CREATE DATABASE diary;
+CREATE DATABASE mindgraph;
+CREATE DATABASE analytics;

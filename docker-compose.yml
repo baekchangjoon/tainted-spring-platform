@@ -1,5 +1,13 @@
 name: tainted-spring-platform
 
+# 추후 추가될 각 Spring 서비스는 이 앵커를 재사용한다.
+# JAVA_TOOL_OPTIONS 는 비워 둔다 — 품질 도구가 -javaagent 등을 주입할 슬롯.
+x-java-service: &java-service
+  environment:
+    JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:-}"
+    SPRING_PROFILES_ACTIVE: "docker"
+  restart: unless-stopped
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
@@ -77,6 +85,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    profiles: ["ui"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    ports:
+      # 호스트 8090 → 컨테이너 8080. (8080은 bff-gateway가 사용하므로 충돌 회피)
+      - "8090:8080"
 
 volumes:
   mysql-data:

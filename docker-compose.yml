@@ -252,6 +252,42 @@ services:
       retries: 20
       start_period: 40s
 
+  bff-gateway:
+    <<: *java-service
+    build:
+      context: ../tainted-spring-bff-gateway
+    depends_on:
+      auth-user:
+        condition: service_healthy
+      diary:
+        condition: service_healthy
+      mindgraph:
+        condition: service_healthy
+      counseling:
+        condition: service_healthy
+      community:
+        condition: service_healthy
+      analytics:
+        condition: service_healthy
+    environment:
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:-}"
+      SPRING_PROFILES_ACTIVE: "docker"
+      SERVICES_AUTHUSER_URL: "http://auth-user:8081"
+      SERVICES_DIARY_URL: "http://diary:8082"
+      SERVICES_MINDGRAPH_URL: "http://mindgraph:8083"
+      SERVICES_COUNSELING_URL: "http://counseling:8084"
+      SERVICES_COMMUNITY_URL: "http://community:8085"
+      SERVICES_ANALYTICS_URL: "http://analytics:8086"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # 런타임 이미지에 설치한 curl 사용. -f: 비2xx 응답이면 실패 → actuator DOWN 시 unhealthy.
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     profiles: ["ui"]

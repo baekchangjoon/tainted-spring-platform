@@ -160,6 +160,29 @@ services:
       retries: 20
       start_period: 40s
 
+  community:
+    <<: *java-service
+    build:
+      context: ../tainted-spring-community
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:-}"
+      SPRING_PROFILES_ACTIVE: "docker"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-rootpw}"
+    ports:
+      - "8085:8085"
+    healthcheck:
+      # 런타임 이미지에 설치한 curl 사용. -f: 비2xx 응답이면 실패 → actuator DOWN 시 unhealthy.
+      test: ["CMD", "curl", "-fsS", "http://localhost:8085/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     profiles: ["ui"]
